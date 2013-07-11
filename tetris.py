@@ -17,7 +17,6 @@ light_colors = {BLUE: LIGHTBLUE, GREEN: LIGHTGREEN, RED: LIGHTRED, YELLOW: LIGHT
 
 
 BLANK = '.'
-FPS = 25
 WINDOWWIDTH = 640
 WINDOWHEIGHT = 480
 BOXSIZE = 20
@@ -209,9 +208,11 @@ def draw_piece(piece, next_piece=False):
 
 
 def draw_box(color, x, y, next_piece=False):
-
+    # The piece would be above the board, unless the function is passed
+    # that the piece will be displayed in the next piece box
     if y <= -1 and not next_piece:
         return
+
     x,y = board_offset_to_window_pixels(x,y)
 
     light_color = light_colors[color]
@@ -220,11 +221,15 @@ def draw_box(color, x, y, next_piece=False):
     pygame.draw.rect(DISPLAYSURF, color, box_rect, BOXBORDER)
 
 def board_offset_to_window_pixels(x, y):
+    # Pieces' and board locations are stored as x,y, where x and y correspond
+    # to the rows and columns of the tetris board.  This function inputs that
+    # and outputs the pixel locations of those pieces or board locations
     x = LEFTBORDER - BOXSIZE + BOXBORDER + (x * BOXSIZE)
     y = BOARDTOP + (y * BOXSIZE)
     return x,y
 
 def get_board_spaces(piece):
+    # Outputs a list of a piece's box's locations on the board 
     board_spaces = []
     rotation_boxes = read_piece_template(piece)
     for (x, y) in rotation_boxes:
@@ -267,13 +272,10 @@ def is_valid_move(piece, board, move):
 
     for (x, y) in board_spaces:
         if x < 0:
-            #print 'x<0'
             return False
         if x >= BOARDWIDTH:
-            #print 'x>boardwidth'
             return False
         if y >= BOARDHEIGHT:
-            #print 'y>boardheight'
             return False
         # Needs to check if space is previously occupied
         if board[y][x] != BLANK:
@@ -281,9 +283,9 @@ def is_valid_move(piece, board, move):
     return True
 
 def is_at_bottom(piece, board):
-    #newpiece = copy_piece(piece)
+    # Returns whether a piece should be stopped from descending
     piece_spaces = get_board_spaces(piece)
-    #print piece_spaces
+
     for x,y in piece_spaces:
         if y >= BOARDHEIGHT-1:
             return True
@@ -294,15 +296,8 @@ def is_at_bottom(piece, board):
             return True
     return False
 
-'''def is_at_top(piece, board):
-    piece_spaces = get_board_spaces(piece)
-    for x,y in piece_spaces:
-        if y <= 1:
-            return True
-
-    return False'''
-
 def are_lines_full(board):
+    # Checks for lines completed across the board
     full_lines = []
     for y in range(len(board)):
         if BLANK not in board[y]:
@@ -312,6 +307,7 @@ def are_lines_full(board):
 
 
 def clear_lines(full_lines, board):
+    # Clears lines from the gameboard
     for line in full_lines:
         board.remove(board[line])
         board.insert(0,['.', '.', '.', '.', '.', '.', '.', '.', '.', '.'])
@@ -326,6 +322,7 @@ def check_for_quit():
         terminate()
 
 def play_again():
+    # Displays "Game Over" and prompts the player to play again
     myfont = pygame.font.SysFont("monospace", 50)
     game_over = myfont.render("Game Over", 1, GRAY)
     DISPLAYSURF.blit(game_over, (200,20))
@@ -381,13 +378,11 @@ def main():
     pygame.font.init()
 
     DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
-    # Blank area above gameboard
-    #BLANKSURF = pygame.Surface((BOARDWIDTH*BOXSIZE, BOARDHEIGHT*BOXSIZE))
+
     while True:
         check_for_quit()
         run_game()
-        #terminate()#should be changed to game_over screen
-        #game_over()
+
         if play_again():
             continue
         else:
@@ -418,16 +413,20 @@ def run_game():
     falling_piece = next_piece_to_board(get_new_piece())
     next_piece = get_new_piece()
     draw_piece(falling_piece)
+
     drop_time = 500
-    pygame.time.set_timer(DROPEVENTINT, drop_time)
     score = 0
     lines = 0
     level = 1
     sliding_right = False
     sliding_left = False
     board = []
+
     for x in range(BOARDHEIGHT):
         board.append(['.']*BOARDWIDTH)
+
+    # Lets the pieces start falling
+    pygame.time.set_timer(DROPEVENTINT, drop_time)
 
     while True:
         check_for_quit()
@@ -493,8 +492,8 @@ def run_game():
 
 
                 else:    
+                    # Sets the piece into the board
                     pygame.event.post(SETEVENT)
-                    #print 'is_at_bottom'
 
             elif event.type == SETEVENTINT:
                 for (x,y) in get_board_spaces(falling_piece):
@@ -517,7 +516,7 @@ def run_game():
 
             elif event.type == SLIDELEFTEVENTINT:
                 slide_left(falling_piece)
-                
+
             if sliding_right:
                 pygame.time.set_timer(SLIDERIGHTEVENTINT, 150)
 
@@ -534,9 +533,4 @@ def run_game():
 
 
 main()
-
-
-
-
-
 
